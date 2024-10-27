@@ -6,12 +6,190 @@ import GLib from 'gi://GLib';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
+import * as ModalDialog from 'resource:///org/gnome/shell/ui/modalDialog.js';
 import Clutter from 'gi://Clutter';
 import Pango from 'gi://Pango';
 
-// Configuration Constants
-const UPDATE_INTERVAL = 900; // Update interval in seconds (15 minutes)
-const COMMAND_PATH = '/home/toz/Development/weatherAPI.sh'; // Path to the script to execute
+// Configuration Constants with default values
+let UPDATE_INTERVAL = 900; // Update interval in seconds (15 minutes)
+let COMMAND_PATH = '/home/toz/Development/weatherAPI.sh'; // Path to the script to execute
+
+// Settings Dialog
+const SettingsWindow = GObject.registerClass(
+    class SettingsWindow extends St.Widget {
+        _init(callback) {
+            super._init({
+                layout_manager: new Clutter.BoxLayout({
+                    orientation: Clutter.Orientation.VERTICAL,
+                    spacing: 10
+                }),
+                style_class: 'settings-window',
+                width: 300,
+                height: -1,
+                reactive: true
+            });
+
+            this._callback = callback;
+
+            // Create window content
+            this._contentBox = new St.BoxLayout({
+                vertical: true,
+                style_class: 'settings-box',
+                y_expand: true,
+                x_expand: true
+            });
+
+            // Title bar
+            let titleBar = new St.BoxLayout({
+                style_class: 'settings-title-bar'
+            });
+
+            let title = new St.Label({
+                text: 'Settings',
+                style_class: 'settings-title',
+                y_align: Clutter.ActorAlign.CENTER
+            });
+
+            let closeButton = new St.Button({
+                style_class: 'settings-close-button',
+                child: new St.Icon({
+                    icon_name: 'window-close-symbolic',
+                    icon_size: 16
+                })
+            });
+            closeButton.connect('clicked', () => this.destroy());
+
+            titleBar.add_child(title);
+            titleBar.add_child(closeButton);
+
+            // Command Path Input
+            let commandBox = new St.BoxLayout({
+                vertical: true,
+                style_class: 'setting-row',
+                x_expand: true
+            });
+
+            let commandLabel = new St.Label({
+                text: 'Command Path:',
+                style_class: 'setting-label'
+            });
+
+            this._commandEntry = new St.Entry({
+                text: COMMAND_PATH,
+                style_class: 'setting-entry',
+                x_expand: true
+            });
+
+            commandBox.add_child(commandLabel);
+            commandBox.add_child(this._commandEntry);
+
+            // Update Interval Input
+            let intervalBox = new St.BoxLayout({
+                vertical: true,
+                style_class: 'setting-row',
+                x_expand: true
+            });
+
+            let intervalLabel = new St.Label({
+                text: 'Update Interval (seconds):',
+                style_class: 'setting-label'
+            });
+
+            this._intervalEntry = new St.Entry({
+                text: UPDATE_INTERVAL.toString(),
+                style_class: 'setting-entry',
+                x_expand: true
+            });
+
+            intervalBox.add_child(intervalLabel);
+            intervalBox.add_child(this._intervalEntry);
+
+            // Button Box
+            let buttonBox = new St.BoxLayout({
+                style_class: 'settings-button-box',
+                x_expand: true,
+                x_align: Clutter.ActorAlign.END
+            });
+
+            let saveButton = new St.Button({
+                style_class: 'settings-button',
+                label: 'Save'
+            });
+            saveButton.connect('clicked', () => this._saveSettings());
+
+            buttonBox.add_child(saveButton);
+
+            // Add everything to the content box
+            this._contentBox.add_child(titleBar);
+            this._contentBox.add_child(commandBox);
+            this._contentBox.add_child(intervalBox);
+            this._contentBox.add_child(buttonBox);
+
+            // Add content box to the widget
+            this.add_child(this._contentBox);
+
+            // Add to the UI group
+            Main.uiGroup.add_child(this);
+
+            // Center the window
+            this._centerWindow();
+
+            // Make it draggable
+            this._draggable = new Clutter.DragAction();
+            this._draggable.connect('drag-begin', () => {
+                this._dragStartPosition = this.get_position();
+            });
+            this._draggable.connect('drag-end', () => {
+                this._dragStartPosition = null;
+            });
+            this._draggable.connect('drag-progress', (action, actor, delta_x, delta_y) => {
+                let [start_x, start_y] = this._dragStartPosition;
+                this.set_position(start_x + delta_x, start_y + delta_y);
+                return true;
+            });
+            this.add_action(this._draggable);
+
+            // Make the title bar the drag handle
+            titleBar.reactive = true;
+            titleBar.bind_property('reactive', this._draggable, 'enabled', GObject.BindingFlags.SYNC_CREATE);
+        }
+
+        _centerWindow() {
+            // Get the monitor that contains the mouse pointer
+            let [mouseX, mouseY] = global.get_pointer();
+            let monitor = Main.layoutManager.monitors[Main.layoutManager.primaryIndex];
+
+            // Calculate the centered position
+            let x = monitor.x + Math.floor((monitor.width - this.width) / 2);
+            let y = monitor.y + Math.floor((monitor.height - this.height) / 2);
+
+            // Set the position
+            this.set_position(x, y);
+        }
+
+        _saveSettings() {
+            const newCommand = this._commandEntry.get_text();
+            const newInterval = parseInt(this._intervalEntry.get_text());
+
+            if (isNaN(newInterval) || newInterval <= 0) {
+                // Show error message
+                Main.notify('Invalid interval value', 'Please enter a positive number');
+                return;
+            }
+
+            // Update global settings
+            COMMAND_PATH = newCommand;
+            UPDATE_INTERVAL = newInterval;
+
+            // Call the callback function
+            if (this._callback) {
+                this._callback(newCommand, newInterval);
+            }
+
+            this.destroy();
+        }
+    }
+);
 
 // Create a custom popup menu item that supports markup
 const MarkupMenuItem = GObject.registerClass(
@@ -26,12 +204,10 @@ const MarkupMenuItem = GObject.registerClass(
                 style_class: 'smaller-text'
             });
             
-            // Enable markup parsing
             this.label.clutter_text.set_use_markup(true);
             
-            // Set a smaller font size using the Pango markup
             this.label.clutter_text.set_font_description(
-                Pango.FontDescription.from_string('9')  // Set font size to 9
+                Pango.FontDescription.from_string('9')
             );
             
             this.add_child(this.label);
@@ -48,49 +224,66 @@ const CommandIndicator = GObject.registerClass(
         _init() {
             super._init(0.0, 'Command Output Indicator');
 
-            // Create a layout box to hold both icon and label
             this._box = new St.BoxLayout({
                 style_class: 'panel-status-menu-box'
             });
 
-            // Add an icon
             this._icon = new St.Icon({
                 icon_name: 'utilities-terminal-symbolic',
                 style_class: 'system-status-icon'
             });
 
-            // Create the label
             this._label = new St.Label({
                 text: 'Loading...',
                 y_align: Clutter.ActorAlign.CENTER,
                 style_class: 'command-output-label'
             });
 
-            // Enable markup for the label
             this._label.clutter_text.set_use_markup(true);
 
-            // Add both icon and label to the box
             this._box.add_child(this._icon);
             this._box.add_child(this._label);
 
-            // Add the box to the panel button
             this.add_child(this._box);
 
             // Create menu item for tooltip content with markup support
             this._tooltipMenuItem = new MarkupMenuItem('Initializing...');
             this.menu.addMenuItem(this._tooltipMenuItem);
             
-            // Connect to menuitem active signal
+            // Add separator
+            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+
+            // Add settings menu item
+            this._settingsMenuItem = new PopupMenu.PopupMenuItem('Settings');
+            this.menu.addMenuItem(this._settingsMenuItem);
+            
+            // Connect signals
             this._tooltipMenuItem.connect('activate', () => {
                 log('Menu item clicked - updating output');
-                // Reset the timeout and update immediately when menu item is clicked
                 this._resetTimeout();
                 this._updateOutput();
+            });
+
+            this._settingsMenuItem.connect('activate', () => {
+                this._showSettingsDialog();
             });
                         
             this._timeout = null;
             this._updateOutput();
         }
+
+        _showSettingsDialog() {
+            if (this._settingsWindow) {
+                // If settings window exists, just focus it
+                this._settingsWindow.destroy();
+            }
+            this._settingsWindow = new SettingsWindow((newCommand, newInterval) => {
+                log(`Settings updated - Command: ${newCommand}, Interval: ${newInterval}`);
+                this._resetTimeout();
+                this._updateOutput();
+                this._settingsWindow = null;
+            });
+}
 
         _parseXMLTags(output) {
             log(`Parsing output: ${output}`);
@@ -101,21 +294,18 @@ const CommandIndicator = GObject.registerClass(
             };
 
             try {
-                // Parse icon tag
                 const iconMatch = output.match(/<icon>(.*?)<\/icon>/);
                 if (iconMatch) {
                     result.icon = iconMatch[1].trim();
                     log(`Found icon: ${result.icon}`);
                 }
 
-                // Parse text tag - now supporting Pango markup
                 const textMatch = output.match(/<txt>(.*?)<\/txt>/s);
                 if (textMatch) {
                     result.text = textMatch[1].trim();
                     log(`Found text: ${result.text}`);
                 }
 
-                // Parse tooltip tag - now supporting Pango markup
                 const toolMatch = output.match(/<tool>(.*?)<\/tool>/s);
                 if (toolMatch) {
                     result.tooltip = toolMatch[1].trim();
@@ -138,19 +328,16 @@ const CommandIndicator = GObject.registerClass(
 
         _updateUI(parsedOutput) {
             try {
-                // Update icon if provided
                 if (parsedOutput.icon) {
                     log(`Updating icon to: ${parsedOutput.icon}`);
                     this._icon.icon_name = parsedOutput.icon;
                 }
 
-                // Update text if provided - now with markup support
                 if (parsedOutput.text) {
                     log(`Updating text to: ${parsedOutput.text}`);
                     this._label.clutter_text.set_markup(parsedOutput.text);
                 }
 
-                // Update tooltip content in menu item with markup
                 if (parsedOutput.tooltip) {
                     log(`Updating tooltip to: ${parsedOutput.tooltip}`);
                     this._tooltipMenuItem.setMarkupText(parsedOutput.tooltip);
@@ -170,7 +357,6 @@ const CommandIndicator = GObject.registerClass(
         async _updateOutput() {
             log('Starting _updateOutput');
             try {
-                // Check if the command file exists
                 const commandFile = Gio.File.new_for_path(COMMAND_PATH);
                 const exists = commandFile.query_exists(null);
                 if (!exists) {
@@ -203,7 +389,6 @@ const CommandIndicator = GObject.registerClass(
                 this._tooltipMenuItem.setMarkupText(this._escapeMarkup(errorMsg));
             }
 
-            // Reset any existing timeout before setting a new one
             this._resetTimeout();
 
             this._timeout = GLib.timeout_add_seconds(
@@ -297,6 +482,10 @@ const CommandIndicator = GObject.registerClass(
         }
 
         destroy() {
+            if (this._settingsWindow) {
+                this._settingsWindow.destroy();
+                this._settingsWindow = null;
+            }
             this._resetTimeout();
             super.destroy();
         }
