@@ -1,0 +1,19 @@
+<schemalist gettext-domain="gnome-shell-extensions">
+  <schema id="org.gnome.shell.extensions.command-output-indicator" 
+          path="/org/gnome/shell/extensions/command-output-indicator/">
+    
+    <key type="s" name="command">
+      <default>''</default>
+      <summary>Command to execute</summary>
+      <description>The command that will be executed to get the status output</description>
+    </key>
+    
+    <key type="i" name="update-interval">
+      <range min="1" max="3600"/>
+      <default>1</default>
+      <summary>Update interval</summary>
+      <description>How often to update the output (in seconds)</description>
+    </key>
+    
+  </schema>
+</schemalist>

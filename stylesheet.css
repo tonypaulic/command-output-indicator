@@ -1,0 +1,12 @@
+/* stylesheet.css */
+.command-output-label {
+    margin-left: 2px;
+}
+
+.panel-status-menu-box {
+    spacing: 2px;
+}
+
+.smaller-text {
+    font-size: 9pt;
+}

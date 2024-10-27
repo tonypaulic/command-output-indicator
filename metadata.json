@@ -1,0 +1,9 @@
+{
+    "name": "Command Output Indicator",
+    "description": "Cyclically displays command output in the top bar",
+    "uuid": "command-output-indicator@toz",
+    "shell-version": ["47"],
+    "url": "",
+    "version": 1
+}
+
