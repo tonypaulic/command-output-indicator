@@ -24,7 +24,7 @@ const SettingsWindow = GObject.registerClass(
                     spacing: 10
                 }),
                 style_class: 'settings-window',
-                width: 300,
+                width: 400,
                 height: -1,
                 reactive: true
             });
@@ -39,15 +39,19 @@ const SettingsWindow = GObject.registerClass(
                 x_expand: true
             });
 
-            // Title bar
+            // Title bar with improved layout
             let titleBar = new St.BoxLayout({
-                style_class: 'settings-title-bar'
+                style_class: 'settings-title-bar',
+                x_expand: true,
+                reactive: true,
+                track_hover: true
             });
 
             let title = new St.Label({
-                text: 'Settings',
+                text: 'Command Output Indicator Settings',
                 style_class: 'settings-title',
-                y_align: Clutter.ActorAlign.CENTER
+                y_align: Clutter.ActorAlign.CENTER,
+                x_expand: true
             });
 
             let closeButton = new St.Button({
@@ -134,24 +138,23 @@ const SettingsWindow = GObject.registerClass(
             // Center the window
             this._centerWindow();
 
-            // Make it draggable
+            // Setup dragging functionality
             this._draggable = new Clutter.DragAction();
-            this._draggable.connect('drag-begin', () => {
+            this._draggable.connect('drag-begin', (action) => {
                 this._dragStartPosition = this.get_position();
             });
             this._draggable.connect('drag-end', () => {
                 this._dragStartPosition = null;
             });
             this._draggable.connect('drag-progress', (action, actor, delta_x, delta_y) => {
+                if (!this._dragStartPosition) return false;
                 let [start_x, start_y] = this._dragStartPosition;
                 this.set_position(start_x + delta_x, start_y + delta_y);
                 return true;
             });
-            this.add_action(this._draggable);
 
-            // Make the title bar the drag handle
-            titleBar.reactive = true;
-            titleBar.bind_property('reactive', this._draggable, 'enabled', GObject.BindingFlags.SYNC_CREATE);
+            // Add drag action to title bar
+            titleBar.add_action(this._draggable);
         }
 
         _centerWindow() {
