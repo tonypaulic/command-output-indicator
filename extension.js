@@ -39,9 +39,16 @@ const SettingsWindow = GObject.registerClass(
                 x_expand: true
             });
 
-            // Title bar
+            // Title bar with full width and justified content
             let titleBar = new St.BoxLayout({
-                style_class: 'settings-title-bar'
+                style_class: 'settings-title-bar',
+                x_expand: true // Make sure it spans full width
+            });
+
+            // Create a container for the title to handle alignment
+            let titleContainer = new St.BoxLayout({
+                x_expand: true,
+                y_align: Clutter.ActorAlign.CENTER
             });
 
             let title = new St.Label({
@@ -59,7 +66,11 @@ const SettingsWindow = GObject.registerClass(
             });
             closeButton.connect('clicked', () => this.destroy());
 
-            titleBar.add_child(title);
+            // Add title to its container with padding
+            titleContainer.add_child(title);
+
+            // Add both containers to the title bar
+            titleBar.add_child(titleContainer);
             titleBar.add_child(closeButton);
 
             // Command Path Input

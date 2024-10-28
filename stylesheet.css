@@ -14,48 +14,44 @@
 .settings-window {
     background-color: rgba(40, 40, 40, 0.95);
     border-radius: 8px;
-    border: 1px solid rgba(128, 128, 128, 0.4);
-    padding: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    padding: 0;
 }
 
 .settings-title-bar {
-    spacing: 6px;
-    margin-bottom: 12px;
+    padding: 8px 12px;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
 }
 
 .settings-title {
     font-weight: bold;
-    font-size: 15px;
-    color: rgb(255, 255, 255);
+    font-size: 1.1em;
 }
 
 .settings-close-button {
     padding: 4px;
-    border-radius: 16px;
+    border-radius: 4px;
 }
 
 .settings-close-button:hover {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
+.settings-box {
+    padding: 12px;
+}
+
 .setting-row {
-    spacing: 6px;
     margin-bottom: 12px;
 }
 
 .setting-label {
-    font-size: 12px;
-    color: rgb(255, 255, 255);
+    margin-bottom: 4px;
 }
 
 .setting-entry {
     margin-top: 4px;
-    padding: 8px;
-    border: 1px solid rgba(128, 128, 128, 0.4);
-    background-color: rgba(0, 0, 0, 0.1);
-    color: rgb(255, 255, 255);
-    border-radius: 4px;
 }
 
 .settings-button-box {
@@ -63,13 +59,12 @@
 }
 
 .settings-button {
+    background-color: rgba(59, 130, 246, 0.9);
+    color: white;
     padding: 8px 16px;
     border-radius: 4px;
-    font-weight: bold;
-    background-color: rgb(41, 98, 218);
-    color: rgb(255, 255, 255);
 }
 
 .settings-button:hover {
-    background-color: rgb(51, 108, 228);
+    background-color: rgba(59, 130, 246, 1);
 }
