@@ -24,7 +24,7 @@ const SettingsWindow = GObject.registerClass(
                     spacing: 10
                 }),
                 style_class: 'settings-window',
-                width: 300,
+                width: 400,
                 height: -1,
                 reactive: true
             });
@@ -52,7 +52,7 @@ const SettingsWindow = GObject.registerClass(
             });
 
             let title = new St.Label({
-                text: 'Settings',
+                text: 'Command Output Indicator Settings',
                 style_class: 'settings-title',
                 y_align: Clutter.ActorAlign.CENTER
             });
