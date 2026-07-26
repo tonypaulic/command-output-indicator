@@ -1,70 +1,12 @@
 /* stylesheet.css */
 .command-output-label {
-    margin-left: 2px;
+    margin-left: 0px;
 }
 
 .panel-status-menu-box {
-    spacing: 2px;
+    spacing: 0px;
 }
 
 .smaller-text {
-    font-size: 9pt;
-}
-
-.settings-window {
-    background-color: rgba(40, 40, 40, 0.95);
-    border-radius: 8px;
-    border: 1px solid rgba(0, 0, 0, 0.3);
-    padding: 0;
-}
-
-.settings-title-bar {
-    padding: 8px 12px;
-    background-color: rgba(0, 0, 0, 0.1);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
-}
-
-.settings-title {
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-.settings-close-button {
-    padding: 4px;
-    border-radius: 4px;
-}
-
-.settings-close-button:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-.settings-box {
-    padding: 12px;
-}
-
-.setting-row {
-    margin-bottom: 12px;
-}
-
-.setting-label {
-    margin-bottom: 4px;
-}
-
-.setting-entry {
-    margin-top: 4px;
-}
-
-.settings-button-box {
-    margin-top: 12px;
-}
-
-.settings-button {
-    background-color: rgba(59, 130, 246, 0.9);
-    color: white;
-    padding: 8px 16px;
-    border-radius: 4px;
-}
-
-.settings-button:hover {
-    background-color: rgba(59, 130, 246, 1);
+    font-size: 11pt;
 }
