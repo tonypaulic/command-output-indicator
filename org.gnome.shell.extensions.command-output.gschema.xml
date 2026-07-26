@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gnome-shell-extensions">
+    <schema id="org.gnome.shell.extensions.command-output" path="/org/gnome/shell/extensions/command-output/">
+        <key name="update-interval" type="i">
+            <default>900</default>
+            <summary>Update Interval</summary>
+            <description>Interval in seconds between command executions</description>
+        </key>
+        <key name="command-path" type="s">
+            <default>''</default>
+            <summary>Command Path</summary>
+            <description>Full path to the script to be executed</description>
+        </key>
+    </schema>
+</schemalist>
